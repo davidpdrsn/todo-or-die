@@ -6,6 +6,7 @@
 //! The following optional features are available:
 //!
 //! - `github`: Enables checking if issues or pull requests are closed.
+//! - `time`: Enables checking things to do with time.
 //!
 //! Note that _none_ of the features are enabled by default.
 
@@ -20,6 +21,8 @@ mod time;
 /// Note that this will make network requests during compile which may make your builds flaky at
 /// times.
 ///
+/// Requires the `github` feature to be enabled.
+///
 /// # Example
 ///
 /// ```compile_fail
@@ -30,10 +33,9 @@ mod time;
 ///
 /// `issue_closed` will first look for the environment variable `TODO_OR_DIE_GITHUB_TOKEN` and then
 /// `GITHUB_TOKEN`, if either are found its value will be used as the auth token when making
-/// requests to the GitHub API. This allows you to access private repo and get more generous
+/// requests to the GitHub API. This allows you to access private repos and get more generous
 /// rate limits.
 #[cfg(feature = "github")]
-#[cfg_attr(docsrs, doc(cfg(feature = "github")))]
 #[proc_macro]
 pub fn issue_closed(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     perform_check(input, github::issue_closed)
@@ -43,6 +45,8 @@ pub fn issue_closed(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 ///
 /// Note that this will make network requests during compile which may make your builds flaky at
 /// times.
+///
+/// Requires the `github` feature to be enabled.
 ///
 /// # Example
 ///
@@ -54,10 +58,9 @@ pub fn issue_closed(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 ///
 /// `pr_closed` will first look for the environment variable `TODO_OR_DIE_GITHUB_TOKEN` and then
 /// `GITHUB_TOKEN`, if either are found its value will be used as the auth token when making
-/// requests to the GitHub API. This allows you to access private repo and get more generous
+/// requests to the GitHub API. This allows you to access private repos and get more generous
 /// rate limits.
 #[cfg(feature = "github")]
-#[cfg_attr(docsrs, doc(cfg(feature = "github")))]
 #[proc_macro]
 pub fn pr_closed(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     perform_check(input, github::pr_closed)
@@ -65,13 +68,14 @@ pub fn pr_closed(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
 /// Trigger a compile error if today is after the given date
 ///
+/// Requires the `time` feature to be enabled.
+///
 /// # Example
 ///
 /// ```compile_fail
 /// todo_or_die::after!("1990-01-01");
 /// ```
 #[cfg(feature = "time")]
-#[cfg_attr(docsrs, doc(cfg(feature = "time")))]
 #[proc_macro]
 pub fn after(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     perform_check(input, time::after)
