@@ -1,21 +1,24 @@
-//! Note that this will make network requests during compile which may make your builds flaky at
-//! times.
-//!
 //! If the environment variable `TODO_OR_DIE_SKIP` is set all macros will do nothing and
 //! immediately succeed.
+//!
+//! # Feature flags
+//!
+//! The following optional features are available:
+//!
+//! - `github`: Enables checking if issues or pull requests are closed.
+//!
+//! Note that _none_ of the features are enabled by default.
 
-use anyhow::Result;
-use hyper::{
-    client::{connect::dns::GaiResolver, HttpConnector},
-    Body, Client,
-};
-use hyper_rustls::HttpsConnector;
-use once_cell::sync::Lazy;
-use tokio::runtime::Runtime;
-
+#[cfg(feature = "github")]
 mod github;
 
+#[cfg(feature = "time")]
+mod time;
+
 /// Trigger a compile error if an issue has been closed.
+///
+/// Note that this will make network requests during compile which may make your builds flaky at
+/// times.
 ///
 /// # Example
 ///
@@ -29,12 +32,17 @@ mod github;
 /// `GITHUB_TOKEN`, if either are found its value will be used as the auth token when making
 /// requests to the GitHub API. This allows you to access private repo and get more generous
 /// rate limits.
+#[cfg(feature = "github")]
+#[cfg_attr(docsrs, doc(cfg(feature = "github")))]
 #[proc_macro]
 pub fn issue_closed(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     perform_check(input, github::issue_closed)
 }
 
 /// Trigger a compile error if a pull request has been closed or merged.
+///
+/// Note that this will make network requests during compile which may make your builds flaky at
+/// times.
 ///
 /// # Example
 ///
@@ -48,14 +56,31 @@ pub fn issue_closed(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// `GITHUB_TOKEN`, if either are found its value will be used as the auth token when making
 /// requests to the GitHub API. This allows you to access private repo and get more generous
 /// rate limits.
+#[cfg(feature = "github")]
+#[cfg_attr(docsrs, doc(cfg(feature = "github")))]
 #[proc_macro]
 pub fn pr_closed(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     perform_check(input, github::pr_closed)
 }
 
+/// Trigger a compile error if today is after the given date
+///
+/// # Example
+///
+/// ```compile_fail
+/// todo_or_die::after!("1990-01-01");
+/// ```
+#[cfg(feature = "time")]
+#[cfg_attr(docsrs, doc(cfg(feature = "time")))]
+#[proc_macro]
+pub fn after(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    perform_check(input, time::after)
+}
+
+#[allow(dead_code)]
 fn perform_check<F, T>(input: proc_macro::TokenStream, f: F) -> proc_macro::TokenStream
 where
-    F: FnOnce(T) -> Result<Option<String>>,
+    F: FnOnce(T) -> anyhow::Result<Option<String>>,
     T: syn::parse::Parse,
 {
     if std::env::var("TODO_OR_DIE_SKIP").is_ok() {
@@ -82,34 +107,9 @@ where
             .into();
         }
         Err(err) => {
-            eprintln!("something went wrong: {}", err);
+            eprintln!("something went wrong\n\n{:?}", err);
         }
     }
 
     Default::default()
-}
-
-static RUNTIME: Lazy<Runtime> = Lazy::new(|| {
-    tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-        .expect("failed to build tokio runtime")
-});
-
-type HyperTlsClient = Client<HttpsConnector<HttpConnector<GaiResolver>>, Body>;
-
-fn http_client() -> &'static HyperTlsClient {
-    static CLIENT: Lazy<HyperTlsClient> = Lazy::new(|| {
-        let mut tls = rustls::ClientConfig::new();
-        tls.set_protocols(&["h2".into(), "http/1.1".into()]);
-        tls.root_store
-            .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
-
-        let mut http = hyper::client::HttpConnector::new();
-        http.enforce_http(false);
-
-        hyper::Client::builder().build::<_, Body>(hyper_rustls::HttpsConnector::from((http, tls)))
-    });
-
-    &*CLIENT
 }

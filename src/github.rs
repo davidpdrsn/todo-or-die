@@ -1,12 +1,15 @@
-use crate::{http_client, RUNTIME};
 use anyhow::{Context as _, Result};
 use hyper::{
+    client::{connect::dns::GaiResolver, HttpConnector},
     header::HeaderValue,
     header::{ACCEPT, AUTHORIZATION, USER_AGENT},
-    Body, Request,
+    Body, Client, Request,
 };
+use hyper_rustls::HttpsConnector;
+use once_cell::sync::Lazy;
 use serde::Deserialize;
 use std::str::FromStr;
+use tokio::runtime::Runtime;
 
 pub fn issue_closed(input: syn::LitStr) -> Result<Option<String>> {
     #[derive(Deserialize, Debug)]
@@ -160,6 +163,31 @@ fn auth_token() -> Option<String> {
     std::env::var("TODO_OR_DIE_GITHUB_TOKEN")
         .ok()
         .or_else(|| std::env::var("GITHUB_TOKEN").ok())
+}
+
+static RUNTIME: Lazy<Runtime> = Lazy::new(|| {
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("failed to build tokio runtime")
+});
+
+type HyperTlsClient = Client<HttpsConnector<HttpConnector<GaiResolver>>, Body>;
+
+fn http_client() -> &'static HyperTlsClient {
+    static CLIENT: Lazy<HyperTlsClient> = Lazy::new(|| {
+        let mut tls = rustls::ClientConfig::new();
+        tls.set_protocols(&["h2".into(), "http/1.1".into()]);
+        tls.root_store
+            .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+
+        let mut http = hyper::client::HttpConnector::new();
+        http.enforce_http(false);
+
+        hyper::Client::builder().build::<_, Body>(hyper_rustls::HttpsConnector::from((http, tls)))
+    });
+
+    &*CLIENT
 }
 
 /// # `issue_closed`
