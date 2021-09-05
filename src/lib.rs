@@ -2,6 +2,8 @@
 //!
 //! `todo-or-die` provides procedural macros that act as checked reminders.
 //!
+//! The name was shamelessly stolen from the ruby gem [`todo_or_die`][ruby].
+//!
 //! # Examples
 //!
 //! ```
@@ -15,12 +17,11 @@
 //! todo_or_die::crates_io!("serde", ">1.0.9000"); // its over 9000!
 //! ```
 //!
-//! The name was shamelessly stolen from the ruby gem [`todo_or_die`][ruby].
-//!
 //! # Skipping checks
 //!
 //! If the environment variable `TODO_OR_DIE_SKIP` is set all macros will do nothing and
-//! immediately succeed.
+//! immediately succeed. This can for example be used to skip checks locally and only perform them
+//! on CI.
 //!
 //! # Feature flags
 //!
