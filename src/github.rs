@@ -1,5 +1,4 @@
 use crate::http::request;
-use syn::parse::Parse;
 use anyhow::{Context as _, Result};
 use hyper::{
     header::HeaderValue,
@@ -7,6 +6,7 @@ use hyper::{
     Body, Request,
 };
 use serde::Deserialize;
+use syn::parse::Parse;
 
 pub(crate) fn issue_closed(input: OrgRepoIssue) -> Result<Option<String>> {
     #[derive(Deserialize, Debug)]
@@ -113,9 +113,7 @@ impl Parse for OrgRepoIssue {
 
         input.parse::<syn::token::Comma>().ok();
 
-        Ok(Self {
-            org, repo, issue
-        })
+        Ok(Self { org, repo, issue })
     }
 }
 

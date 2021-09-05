@@ -39,8 +39,7 @@ where
         let body = hyper::body::to_bytes(response)
             .await
             .context("Failed to read response")?;
-        let value =
-            serde_json::from_slice::<T>(&body).context("Failed to parse response")?;
+        let value = serde_json::from_slice::<T>(&body).context("Failed to parse response")?;
 
         Ok(value)
     })

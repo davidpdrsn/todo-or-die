@@ -1,6 +1,6 @@
 use anyhow::Result;
-use syn::parse::Parse;
 use chrono::prelude::*;
+use syn::parse::Parse;
 
 pub(crate) fn after_date(input: Input) -> Result<Option<String>> {
     let input = NaiveDate::from_ymd(input.year, input.month, input.day);
