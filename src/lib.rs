@@ -23,6 +23,11 @@
 //! immediately succeed. This can for example be used to skip checks locally and only perform them
 //! on CI.
 //!
+//! # Caching HTTP requests
+//!
+//! By default HTTP requests will be cached for 1 hour. You can change how long cached
+//! responses will be kept by setting `TODO_OR_DIE_HTTP_CACHE_TTL_SECONDS`.
+//!
 //! # Feature flags
 //!
 //! The following optional features are available:

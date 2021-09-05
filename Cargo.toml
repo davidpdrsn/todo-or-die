@@ -29,6 +29,7 @@ __internal_http = [
     "serde_json",
     "tokio",
     "webpki-roots",
+    "chrono/serde",
 ]
 
 [dependencies]
