@@ -24,3 +24,5 @@ More information about this crate can be found in the [crate documentation][docs
 ## License
 
 This project is licensed under the [MIT license](LICENSE).
+
+[docs](https://docs.rs/todo-or-die)
