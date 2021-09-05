@@ -15,10 +15,8 @@ repository = "https://github.com/davidpdrsn/todo-or-die"
 default = []
 github = ["__internal_http"]
 time = ["chrono"]
-crate = [
-    "__internal_http",
-    "semver",
-]
+crate = ["__internal_http", "semver"]
+rust = ["version_check", "semver"]
 
 # an internal feature to more easily enable http crates
 # don't use this yourself
@@ -48,6 +46,7 @@ semver = { optional = true, version = "1.0" }
 serde = { optional = true, version = "1.0", features = ["derive"] }
 serde_json = { optional = true, version = "1.0" }
 tokio = { optional = true, version = "1.0", features = ["rt"] }
+version_check = { optional = true, version = "0.9" }
 webpki-roots = { optional = true, version = "0.21" }
 
 [lib]
