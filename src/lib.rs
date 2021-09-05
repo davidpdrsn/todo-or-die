@@ -191,7 +191,7 @@ where
         Err(err) => {
             let err = err.to_string();
             return quote::quote! {
-                ::std::compile_error!(#err)
+                ::std::compile_error!(#err);
             }
             .into();
         }
@@ -201,7 +201,7 @@ where
         Ok(None) => {}
         Ok(Some(msg)) => {
             return quote::quote! {
-                ::std::compile_error!(#msg)
+                ::std::compile_error!(#msg);
             }
             .into();
         }
