@@ -42,12 +42,12 @@ syn = "1.0"
 chrono = { optional = true, version = "0.4", default_features = false, features = ["clock"] }
 hyper = { optional = true, version = "0.14", features = ["client", "http1", "http2"] }
 hyper-rustls = { optional = true, version = "0.22", features = ["webpki-roots"] }
-once_cell = { optional = true, version = "1.8" }
+once_cell = { optional = true, version = "1.0" }
 rustls = { optional = true, version = "0.19" }
 semver = { optional = true, version = "1.0" }
 serde = { optional = true, version = "1.0", features = ["derive"] }
 serde_json = { optional = true, version = "1.0" }
-tokio = { optional = true, version = "1.11", features = ["rt"] }
+tokio = { optional = true, version = "1.0", features = ["rt"] }
 webpki-roots = { optional = true, version = "0.21" }
 
 [lib]
