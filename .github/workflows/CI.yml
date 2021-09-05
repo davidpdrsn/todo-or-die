@@ -1,0 +1,149 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - main
+  pull_request: {}
+
+jobs:
+  check:
+    # Run `cargo check` first to ensure that the pushed code at least compiles.
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+        profile: minimal
+        components: clippy
+    # caching
+    - name: Cache cargo registry
+      uses: actions/cache@v2.1.6
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-v1-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+    - name: Cache cargo index
+      uses: actions/cache@v2.1.6
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-v1-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+    - name: Cache cargo target dir
+      uses: actions/cache@v2.1.6
+      with:
+        path: target
+        key: ${{ runner.os }}-v1-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+    # /caching
+    - name: Check
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --all --all-targets --all-features
+    - name: rustfmt
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --all -- --check
+
+  check-docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+        profile: minimal
+    # caching
+    - name: Cache cargo registry
+      uses: actions/cache@v2.1.6
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-v1-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+    - name: Cache cargo index
+      uses: actions/cache@v2.1.6
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-v1-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+    - name: Cache cargo target dir
+      uses: actions/cache@v2.1.6
+      with:
+        path: target
+        key: ${{ runner.os }}-v1-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+    # /caching
+    - name: cargo doc
+      working-directory: ${{ matrix.subcrate }}
+      env:
+          RUSTDOCFLAGS: "-D broken-intra-doc-links"
+      run: cargo doc --all-features --no-deps
+
+  test-versions:
+    # Test against the stable, beta, and nightly Rust toolchains on ubuntu-latest.
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, 1.51]
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        override: true
+        profile: minimal
+    # caching
+    - name: Cache cargo registry
+      uses: actions/cache@v2.1.6
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-v1-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+    - name: Cache cargo index
+      uses: actions/cache@v2.1.6
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-v1-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+    - name: Cache cargo target dir
+      uses: actions/cache@v2.1.6
+      with:
+        path: target
+        key: ${{ runner.os }}-v1-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+    # /caching
+    - name: Run tests
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all --all-features --all-targets
+
+  test-docs:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+        profile: minimal
+    # caching
+    - name: Cache cargo registry
+      uses: actions/cache@v2.1.6
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-v1-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+    - name: Cache cargo index
+      uses: actions/cache@v2.1.6
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-v1-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+    - name: Cache cargo target dir
+      uses: actions/cache@v2.1.6
+      with:
+        path: target
+        key: ${{ runner.os }}-v1-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+    # /caching
+    - name: Run doc tests
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all-features --doc
