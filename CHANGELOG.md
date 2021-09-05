@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Unreleased
 
-- None.
+- Add `rust_version` for checking the currently active version of rust.
 
 # 0.1.0 (05. September, 2021)
 

@@ -27,9 +27,10 @@
 //!
 //! The following optional features are available:
 //!
-//! - `github`: Enables checking if issues or pull requests are closed.
-//! - `time`: Enables checking things to do with time.
 //! - `crate`: Enables checking versions of crates.
+//! - `github`: Enables checking if issues or pull requests are closed.
+//! - `rust`: Enables checking the current rust version.
+//! - `time`: Enables checking things to do with time.
 //!
 //! Note that _none_ of the features are enabled by default.
 //!
@@ -86,6 +87,9 @@ mod time;
 
 #[cfg(feature = "crate")]
 mod krate;
+
+#[cfg(feature = "rust")]
+mod rust;
 
 /// Trigger a compile error if an issue has been closed.
 ///
@@ -174,6 +178,27 @@ pub fn after_date(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 #[proc_macro]
 pub fn crates_io(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     perform_check(input, krate::crates_io)
+}
+
+/// Trigger a compile error if the currently used version of rust used matches some expression.
+///
+/// Note that release channels (like `nightly` or `beta`) are ignored.
+///
+/// Requires the `rust` feature to be enabled.
+///
+/// # Example
+///
+/// ```compile_fail
+/// todo_or_die::rust_version!(">1.50");
+/// ```
+///
+/// Any version requirement supported by [`semver::VersionReq::parse`] is supported.
+///
+/// [`semver::VersionReq::parse`]: https://docs.rs/semver/latest/semver/struct.VersionReq.html#method.parse
+#[cfg(feature = "rust")]
+#[proc_macro]
+pub fn rust_version(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    perform_check(input, rust::rust_version)
 }
 
 #[allow(dead_code)]
