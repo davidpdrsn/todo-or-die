@@ -5,7 +5,16 @@ edition = "2018"
 
 [features]
 default = []
-github = [
+github = ["__internal_http"]
+time = ["chrono"]
+crate = [
+    "__internal_http",
+    "semver",
+]
+
+# an internal feature to more easily enable http crates
+# don't use this yourself
+__internal_http = [
     "hyper",
     "hyper-rustls",
     "once_cell",
@@ -15,7 +24,6 @@ github = [
     "tokio",
     "webpki-roots",
 ]
-time = ["chrono"]
 
 [dependencies]
 anyhow = "1.0"
@@ -23,15 +31,16 @@ quote = "1.0"
 syn = "1.0"
 
 # optional dependencies
+chrono = { optional = true, version = "0.4", default_features = false, features = ["clock"] }
 hyper = { optional = true, version = "0.14", features = ["client", "http1", "http2"] }
 hyper-rustls = { optional = true, version = "0.22", features = ["webpki-roots"] }
 once_cell = { optional = true, version = "1.8" }
 rustls = { optional = true, version = "0.19" }
+semver = { optional = true, version = "1.0" }
 serde = { optional = true, version = "1.0", features = ["derive"] }
 serde_json = { optional = true, version = "1.0" }
 tokio = { optional = true, version = "1.11", features = ["rt"] }
 webpki-roots = { optional = true, version = "0.21" }
-chrono = { optional = true, version = "0.4" }
 
 [lib]
 proc-macro = true
