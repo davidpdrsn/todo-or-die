@@ -21,6 +21,11 @@ todo_or_die::crates_io!("serde", ">1.0.9000"); // its over 9000!
 
 More information about this crate can be found in the [crate documentation][docs].
 
+The name was shamelessly stolen from the ruby gem [`todo_or_die`][ruby].
+
 ## License
 
 This project is licensed under the [MIT license](LICENSE).
+
+[ruby]: https://rubygems.org/gems/todo_or_die
+[docs]: https://docs.rs/todo-or-die
