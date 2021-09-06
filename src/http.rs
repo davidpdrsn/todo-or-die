@@ -65,10 +65,13 @@ async fn execute_request_and_cache_response(
     request: Request<Body>,
     hash: &RequestHash,
 ) -> Result<Response<Bytes>> {
-    let response = http_client()
-        .request(request)
-        .await
-        .context("HTTP request to failed")?;
+    let response = tokio::time::timeout(
+        std::time::Duration::from_secs(1),
+        http_client().request(request),
+    )
+    .await
+    .context("HTTP request timed out")?
+    .context("HTTP request to failed")?;
 
     let (parts, body) = response.into_parts();
     let body = hyper::body::to_bytes(body)
