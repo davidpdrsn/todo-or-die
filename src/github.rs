@@ -3,7 +3,7 @@ use anyhow::{Context as _, Result};
 use hyper::{
     header::HeaderValue,
     header::{ACCEPT, AUTHORIZATION},
-    Body, Request,
+    Request,
 };
 use serde::Deserialize;
 use syn::parse::Parse;
@@ -26,7 +26,7 @@ pub(crate) fn issue_closed(input: OrgRepoIssue) -> Result<Option<String>> {
                 "https://api.github.com/repos/{}/{}/issues/{}",
                 org, repo, issue_number
             ))
-            .body(Body::empty())
+            .body(())
             .unwrap(),
     )?)?;
 
@@ -58,7 +58,7 @@ pub(crate) fn pr_closed(input: OrgRepoIssue) -> Result<Option<String>> {
                 "https://api.github.com/repos/{}/{}/pulls/{}",
                 org, repo, issue_number
             ))
-            .body(Body::empty())
+            .body(())
             .unwrap(),
     )?)?;
 
@@ -72,7 +72,7 @@ pub(crate) fn pr_closed(input: OrgRepoIssue) -> Result<Option<String>> {
     }
 }
 
-fn github_request(mut request: Request<Body>) -> Result<Request<Body>> {
+fn github_request<B>(mut request: Request<B>) -> Result<Request<B>> {
     request.headers_mut().insert(
         ACCEPT,
         HeaderValue::from_static("application/vnd.github.v3+json"),

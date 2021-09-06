@@ -17,12 +17,6 @@
 //! todo_or_die::crates_io!("serde", ">1.0.9000"); // its over 9000!
 //! ```
 //!
-//! # Skipping checks
-//!
-//! If the environment variable `TODO_OR_DIE_SKIP` is set all macros will do nothing and
-//! immediately succeed. This can for example be used to skip checks locally and only perform them
-//! on CI.
-//!
 //! # Feature flags
 //!
 //! The following optional features are available:
@@ -33,6 +27,29 @@
 //! - `time`: Enables checking things to do with time.
 //!
 //! Note that _none_ of the features are enabled by default.
+//!
+//! # Skipping checks
+//!
+//! If the environment variable `TODO_OR_DIE_SKIP` is set all macros will do
+//! nothing and immediately succeed. This can for example be used to skip checks
+//! locally and only perform them on CI.
+//!
+//! # Caching HTTP requests
+//!
+//! By default HTTP requests will be cached. The behavior can be customized with
+//! these environment variables:
+//! - `TODO_OR_DIE_HTTP_CACHE_TTL_SECONDS`: How long cached responses will be
+//! used. The default is 1 hour.
+//! - `TODO_OR_DIE_DISABLE_HTTP_CACHE`: Disables caching if its set.
+//! - `TODO_OR_DIE_CLEAR_HTTP_CACHE`: Clears the cache if its set.
+//!
+//! The cache is stored at `std::env::temp_dir().join("todo_or_die_cache")`.
+//!
+//! # You can still compile offline
+//!
+//! If you're offline or GitHub is down you can still build. If the macros hit
+//! some kind of error a warning will be printed but they wont trigger a compile
+//! error.
 //!
 //! [ruby]: https://rubygems.org/gems/todo_or_die
 

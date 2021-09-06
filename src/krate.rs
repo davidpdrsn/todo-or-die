@@ -1,6 +1,6 @@
 use crate::http::request;
 use anyhow::{Context as _, Result};
-use hyper::{Body, Request};
+use hyper::Request;
 use semver::{Version, VersionReq};
 use serde::Deserialize;
 use syn::parse::Parse;
@@ -19,7 +19,7 @@ pub(crate) fn crates_io(input: Input) -> Result<Option<String>> {
     let data = request::<Response>(
         Request::builder()
             .uri(format!("https://crates.io/api/v1/crates/{}", input.krate))
-            .body(Body::empty())
+            .body(())
             .unwrap(),
     )?;
 
