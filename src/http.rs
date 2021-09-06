@@ -26,6 +26,10 @@ where
     T: serde::de::DeserializeOwned,
 {
     RUNTIME.block_on(async move {
+        if should_clear_cache() {
+            clear_cache().ok();
+        }
+
         let mut request = request.map(|_| Body::empty());
 
         request
@@ -119,7 +123,7 @@ fn cached_response(hash: &RequestHash) -> Result<Option<Response<Bytes>>> {
         return Ok(None);
     }
 
-    let path = cache_dir_path()?.join(&hash.0);
+    let path = cache_dir_path_for_this_version()?.join(&hash.0);
 
     let data = match std::fs::read(&path) {
         Ok(file) => file,
@@ -138,9 +142,15 @@ fn cached_response(hash: &RequestHash) -> Result<Option<Response<Bytes>>> {
 }
 
 fn cache_response(hash: &RequestHash, response: &Response<Bytes>) -> Result<()> {
-    let path = cache_dir_path()?.join(&hash.0);
+    let path = cache_dir_path_for_this_version()?.join(&hash.0);
     let bytes = serialize_response(response)?;
     std::fs::write(path, bytes)?;
+    Ok(())
+}
+
+fn clear_cache() -> Result<()> {
+    let path = top_level_cache_dir()?;
+    std::fs::remove_dir_all(path)?;
     Ok(())
 }
 
@@ -209,13 +219,23 @@ struct SerializedResponse {
     expires_at: DateTime<Local>,
 }
 
-fn cache_dir_path() -> Result<PathBuf> {
+fn top_level_cache_dir() -> Result<PathBuf> {
+    let path = std::env::temp_dir().join("todo_or_die_cache");
+    std::fs::create_dir_all(&path).context("Failed to create dir to store HTTP caches")?;
+    Ok(path)
+}
+
+fn cache_dir_path_for_this_version() -> Result<PathBuf> {
     let todo_or_die_version = env!("CARGO_PKG_VERSION");
-    let path = std::env::temp_dir().join(format!("todo_or_die_{}_cache", todo_or_die_version));
+    let path = top_level_cache_dir()?.join(todo_or_die_version);
     std::fs::create_dir_all(&path).context("Failed to create dir to store HTTP caches")?;
     Ok(path)
 }
 
 fn caching_enabled() -> bool {
-    std::env::var("TODO_OR_DIE_DISABLE_HTTP_CACHE").is_err()
+    !should_clear_cache() && std::env::var("TODO_OR_DIE_DISABLE_HTTP_CACHE").is_err()
+}
+
+fn should_clear_cache() -> bool {
+    std::env::var("TODO_OR_DIE_CLEAR_HTTP_CACHE").is_ok()
 }

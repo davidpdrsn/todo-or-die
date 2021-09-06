@@ -36,11 +36,14 @@
 //!
 //! # Caching HTTP requests
 //!
-//! By default HTTP requests will be cached for 1 hour. You can change how long
-//! cached responses will be kept by setting
-//! `TODO_OR_DIE_HTTP_CACHE_TTL_SECONDS`.
+//! By default HTTP requests will be cached. The behavior can be customized with
+//! these environment variables:
+//! - `TODO_OR_DIE_HTTP_CACHE_TTL_SECONDS`: How long cached responses will be
+//! used. The default is 1 hour.
+//! - `TODO_OR_DIE_DISABLE_HTTP_CACHE`: Disables caching if its set.
+//! - `TODO_OR_DIE_CLEAR_HTTP_CACHE`: Clears the cache if its set.
 //!
-//! Caching can be disabled entirely by setting `TODO_OR_DIE_DISABLE_HTTP_CACHE`.
+//! The cache is stored at `std::env::temp_dir().join("todo_or_die_cache")`.
 //!
 //! # You can still compile offline
 //!
