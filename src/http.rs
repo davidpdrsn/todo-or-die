@@ -39,20 +39,7 @@ where
         {
             cached_response
         } else {
-            let response = http_client()
-                .request(request)
-                .await
-                .context("HTTP request to failed")?;
-
-            let (parts, body) = response.into_parts();
-            let body = hyper::body::to_bytes(body)
-                .await
-                .context("Failed to read response")?;
-            let response = Response::from_parts(parts, body);
-
-            cache_response(hash, &response).context("Failed to cache response")?;
-
-            response
+            execute_request_and_cache_response(request, &hash).await?
         };
 
         if !response.status().is_success() {
@@ -68,6 +55,28 @@ where
             serde_json::from_slice::<T>(&*response.body()).context("Failed to parse response")?;
         Ok(value)
     })
+}
+
+async fn execute_request_and_cache_response(
+    request: Request<Body>,
+    hash: &RequestHash,
+) -> Result<Response<Bytes>> {
+    let response = http_client()
+        .request(request)
+        .await
+        .context("HTTP request to failed")?;
+
+    let (parts, body) = response.into_parts();
+    let body = hyper::body::to_bytes(body)
+        .await
+        .context("Failed to read response")?;
+    let response = Response::from_parts(parts, body);
+
+    if caching_enabled() {
+        cache_response(hash, &response).context("Failed to cache response")?;
+    }
+
+    Ok(response)
 }
 
 static RUNTIME: Lazy<Runtime> = Lazy::new(|| {
@@ -106,6 +115,10 @@ fn hash_request(request: &Request<Body>) -> RequestHash {
 }
 
 fn cached_response(hash: &RequestHash) -> Result<Option<Response<Bytes>>> {
+    if !caching_enabled() {
+        return Ok(None);
+    }
+
     let path = cache_dir_path()?.join(&hash.0);
 
     let data = match std::fs::read(&path) {
@@ -124,8 +137,8 @@ fn cached_response(hash: &RequestHash) -> Result<Option<Response<Bytes>>> {
     }
 }
 
-fn cache_response(hash: RequestHash, response: &Response<Bytes>) -> Result<()> {
-    let path = cache_dir_path()?.join(hash.0);
+fn cache_response(hash: &RequestHash, response: &Response<Bytes>) -> Result<()> {
+    let path = cache_dir_path()?.join(&hash.0);
     let bytes = serialize_response(response)?;
     std::fs::write(path, bytes)?;
     Ok(())
@@ -201,4 +214,8 @@ fn cache_dir_path() -> Result<PathBuf> {
     let path = std::env::temp_dir().join(format!("todo_or_die_{}_cache", todo_or_die_version));
     std::fs::create_dir_all(&path).context("Failed to create dir to store HTTP caches")?;
     Ok(path)
+}
+
+fn caching_enabled() -> bool {
+    std::env::var("TODO_OR_DIE_DISABLE_HTTP_CACHE").is_err()
 }
