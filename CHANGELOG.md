@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Unreleased
 
-- None.
+- Timeout HTTP requests after 1 second.
 
 # 0.1.1 (06. September, 2021)
 
