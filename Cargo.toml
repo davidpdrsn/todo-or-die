@@ -1,6 +1,6 @@
 [package]
 name = "todo-or-die"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["David Pedersen <david.pdrsn@gmail.com>"]
 categories = ["development-tools"]
 description = "TODOs checked at compile time"
